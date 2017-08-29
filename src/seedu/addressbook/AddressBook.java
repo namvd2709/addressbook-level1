@@ -14,15 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /*
  * NOTE : =============================================================
@@ -116,6 +108,11 @@ public class AddressBook {
     private static final String COMMAND_LIST_DESC = "Displays all persons as a list with index numbers.";
     private static final String COMMAND_LIST_EXAMPLE = COMMAND_LIST_WORD;
 
+    private static final String COMMAND_SORT_WORD = "sort";
+    private static final String COMMAND_SORT_DESC = "Sorts all persons in the list by a field and returns a sorted "
+            + "list when the \'list\' command is run";
+    private static final String COMMAND_SORT_EXAMPLE = COMMAND_FIND_WORD + "name";
+
     private static final String COMMAND_DELETE_WORD = "delete";
     private static final String COMMAND_DELETE_DESC = "Deletes a person identified by the index number used in "
                                                     + "the last find/list call.";
@@ -137,9 +134,9 @@ public class AddressBook {
     private static final String DIVIDER = "===================================================";
 
 
-    /* We use a String array to store details of a single person.
+    /* We use a HashMap to store details of a single person.
      * The constants given below are the indexes for the different data elements of a person
-     * used by the internal String[] storage format.
+     * used by the internal HashMap<String, String> storage format.
      * For example, a person's name is stored as the 0th element in the array.
      */
     private static final int PERSON_DATA_INDEX_NAME = 0;
@@ -381,6 +378,8 @@ public class AddressBook {
             return executeFindPersons(commandArgs);
         case COMMAND_LIST_WORD:
             return executeListAllPersonsInAddressBook();
+        case COMMAND_SORT_WORD:
+            return executeSortAddressBook();
         case COMMAND_DELETE_WORD:
             return executeDeletePerson(commandArgs);
         case COMMAND_CLEAR_WORD:
@@ -585,6 +584,15 @@ public class AddressBook {
         return getMessageForPersonsDisplayedSummary(toBeDisplayed);
     }
 
+    /** Sort the address book by name and return the sorted list.
+     *
+     * @return feedback display message for the operation result
+     */
+    private static String executeSortAddressBook() {
+        ArrayList<HashMap<String, String>> toBeDisplayedSorted = getAllPersonsSortedInAddressBook();
+        showToUser(toBeDisplayedSorted);
+        return getMessageForPersonsDisplayedSummary(toBeDisplayedSorted);
+    }
     /**
      * Requests to terminate the program.
      */
@@ -814,6 +822,19 @@ public class AddressBook {
         return ALL_PERSONS;
     }
 
+    /**
+     * Returns all persons sorted in the address book
+     */
+    private static ArrayList<HashMap<String, String>> getAllPersonsSortedInAddressBook() {
+        final List<HashMap<String, String>> ALL_PERSONS_SORTED = new ArrayList<>(ALL_PERSONS);
+        Collections.sort(ALL_PERSONS_SORTED, new Comparator<HashMap<String, String>>() {
+            @Override
+            public int compare(HashMap<String, String> p1, HashMap<String, String> p2) {
+                return p1.get(PERSON_PROPERTY_NAME).compareTo(p2.get(PERSON_PROPERTY_NAME));
+            }
+        });
+        return new ArrayList<>(ALL_PERSONS_SORTED);
+    }
     /**
      * Clears all persons in the address book and saves changes to file.
      */
